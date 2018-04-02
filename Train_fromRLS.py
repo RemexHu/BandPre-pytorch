@@ -15,10 +15,11 @@ TARGET_SIZE = 1
 INPUT_SIZE = 1
 HIDDEN_SIZE = 128
 
-BATCH_SIZE = 10
+BATCH_SIZE = 20
 LR = 0.001
-EPOCH = 20
+EPOCH = 15
 RLS_MU = 0.6
+IS_RLS = False
 
 def create_Dataset(dir):
     # Input: dir, path of log files
@@ -36,7 +37,7 @@ def create_DataTensor(dataset, window):
     data_x, data_y = [], []
     for i in range(window, len(dataset)):
         batch_x = dataset[i - window: i]
-        batch_y = dataset[i]
+        batch_y = dataset[i: i + TARGET_SIZE]
         data_x.append(batch_x[:, np.newaxis])
         data_y.append(np.array([[batch_y]]))
 
@@ -60,21 +61,21 @@ def create_RLSdataset(dataset):
     RLS_x, RLS_y = [], []
     for i in range(TIME_STEP, len(dataset)):
         batch_x = dataset[i - TIME_STEP: i]
-        batch_y = dataset[i]
+        batch_y = dataset[i: i + TARGET_SIZE]
         RLS_x.append(batch_x)
         RLS_y.append(np.array(batch_y))
 
     return RLS_x, RLS_y
 
 
-def RLS_prediction(RLS_x, RLS_y, length):
+def RLS_prediction(RLS_x, RLS_y):
     RLS = pa.filters.FilterRLS(TIME_STEP, RLS_MU)
-    pred = np.zeros(length)
+    pred = np.zeros(len(RLS_x))
 
     for cur in range(len(RLS_x)):
         prediction = RLS.predict(RLS_x[cur])
         RLS.adapt(RLS_y[cur], RLS_x[cur])
-        pred[cur + 20] = prediction
+        pred[cur] = prediction
 
     return pred
 
@@ -88,7 +89,7 @@ class Net(nn.Module):
         self.lstm = nn.LSTM(
             input_size=INPUT_SIZE,
             hidden_size=HIDDEN_SIZE,
-            num_layers=2,
+            num_layers=6,
             batch_first=True,
             dropout=0.2,
         )
@@ -124,7 +125,10 @@ def train(model, DataLoader_train, DataLoader_test, epochs, optimizer, loss_fn):
                 itr += 1
 
                 if itr % 200 == 0:
-                    loss_val = val(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
+                    if IS_RLS:
+                        loss_val = val_RLS(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
+                    else:
+                        loss_val = val(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
                     loss_curve.append(loss_val)
                     print('Epoch{} Iter{} val_oss{}'.format(epoch, itr, loss_val))
 
@@ -147,36 +151,80 @@ def val(model, DataLoader_test, loss_fn):
     return np.sum(sum(loss_itr).data.cpu().numpy())
 
 
+def val_RLS(model, DataLoader_test, loss_fn):
+    loss_itr = []
+    for loader in DataLoader_test:
+        for (batch_x, batch_y) in loader:
+            batch_x, batch_y = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor)
+            x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
+            output = model(x)
+            loss_itr.append(loss_fn(output, y))
+
+    return np.sum(sum(loss_itr).data.cpu().numpy())
+
+
+
 
 def main():
 
-    filedict_train = {'bus': 11, 'car': 5, 'ferry': 15, 'metro': 16, 'train': 4, 'tram': 17}
+    filedict_train_1 = {'bus': 11, 'car': 5, 'ferry': 15, 'metro': 16, 'train': 4, 'tram': 17}
     training = []
-    for category, num in filedict_train.items():
+    for category, num in filedict_train_1.items():
         for i in range(num):
             dir = 'train_sim_traces/' + category + str(i) +'.log'
             training.append(create_Dataset(dir))
 
-    filedict_test = {'bus': 2, 'car': 2, 'ferry': 2, 'metro': 2, 'train': 2, 'tram': 2}
+    filedict_train_2 = {'bus': 11, 'car': 5, 'ferry': 15, 'metro': 16, 'train': 4, 'tram': 17}
+    training = []
+    for category, num in filedict_train_2.items():
+        for i in range(num):
+            dir = 'train_sim_traces/' + category + str(i) + '.log'
+            training.append(create_Dataset(dir))
 
+
+    filedict_test = {'bus': 2, 'car': 2, 'ferry': 2, 'metro': 2, 'train': 2, 'tram': 2}
     test = []
     for category, num in filedict_test.items():
         for i in range(num):
             dir = 'test_sim_traces/norway_' + category + '_' + str(i + 1)
             test.append(create_Dataset(dir))
 
+    if IS_RLS:
+        DataLoader_train, DataLoader_test = [], []
+        for dataset in training:
+            RLS_x, RLS_y = create_RLSdataset(dataset)
+            pred = RLS_prediction(RLS_x, RLS_y)
+            diff = dataset[TIME_STEP:] - pred
+            if diff.shape[0] < 20:
+                continue
+            Tensor_x, Tensor_y = create_DataTensor(diff, TIME_STEP)
+            loader = create_DataLoader(Tensor_x, Tensor_y)
+            DataLoader_train.append(loader)
+        for dataset in test:
+            RLS_x, RLS_y = create_RLSdataset(dataset)
+            pred = RLS_prediction(RLS_x, RLS_y)
+            diff = dataset[TIME_STEP:] - pred
+            if diff.shape[0] < 20:
+                continue
+            Tensor_x, Tensor_y = create_DataTensor(diff, TIME_STEP)
+            loader = create_DataLoader(Tensor_x, Tensor_y)
+            DataLoader_test.append(loader)
 
-    DataLoader_train, DataLoader_test = [], []
-    for dataset in training:
-        Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
-        loader = create_DataLoader(Tensor_x, Tensor_y)
-        DataLoader_train.append(loader)
-    for dataset in test:
-        Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
-        loader = create_DataLoader(Tensor_x, Tensor_y)
-        DataLoader_test.append(loader)
 
-
+    else:
+        DataLoader_train, DataLoader_test = [], []
+        for dataset in training:
+            if dataset.shape[0] < 20:
+                continue
+            Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
+            loader = create_DataLoader(Tensor_x, Tensor_y)
+            DataLoader_train.append(loader)
+        for dataset in test:
+            if dataset.shape[0] < 20:
+                continue
+            Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
+            loader = create_DataLoader(Tensor_x, Tensor_y)
+            DataLoader_test.append(loader)
 
 
     BandwidthLSTM = Net()
@@ -191,11 +239,11 @@ def main():
           optimizer=optimizer,
           loss_fn=loss_fn)
 
-    torch.save(BandwidthLSTM, 'net1.pkl')
+    torch.save(BandwidthLSTM, '/home/runchen/Github/BandPre-pytorch/models/Normal_6layers.pkl')
 
     plt.figure(figsize=(25, 9))
     plt.plot(loss_curve)
-    plt.savefig('Loss_curve1.png')
+    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_Normal_6layers.png')
     plt.show()
 
 
