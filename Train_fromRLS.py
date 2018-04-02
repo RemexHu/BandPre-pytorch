@@ -16,10 +16,10 @@ INPUT_SIZE = 1
 HIDDEN_SIZE = 128
 
 BATCH_SIZE = 20
-LR = 0.001
-EPOCH = 15
+LR = 0.0008
+EPOCH = 20
 RLS_MU = 0.6
-IS_RLS = False
+IS_RLS = True
 
 def create_Dataset(dir):
     # Input: dir, path of log files
@@ -89,9 +89,10 @@ class Net(nn.Module):
         self.lstm = nn.LSTM(
             input_size=INPUT_SIZE,
             hidden_size=HIDDEN_SIZE,
-            num_layers=6,
+            num_layers=7,
             batch_first=True,
-            dropout=0.2,
+            dropout=0.15,
+            #bidirectional=True
         )
         self.out = nn.Linear(HIDDEN_SIZE * TIME_STEP, TARGET_SIZE)
 
@@ -124,7 +125,7 @@ def train(model, DataLoader_train, DataLoader_test, epochs, optimizer, loss_fn):
                 optimizer.step()
                 itr += 1
 
-                if itr % 200 == 0:
+                if itr % 50 == 0:
                     if IS_RLS:
                         loss_val = val_RLS(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
                     else:
@@ -174,11 +175,11 @@ def main():
             dir = 'train_sim_traces/' + category + str(i) +'.log'
             training.append(create_Dataset(dir))
 
-    filedict_train_2 = {'bus': 11, 'car': 5, 'ferry': 15, 'metro': 16, 'train': 4, 'tram': 17}
+    filedict_train_2 = {'bus': 24, 'car': 13, 'ferry': 21, 'metro': 10, 'train': 22, 'tram': 57}
     training = []
     for category, num in filedict_train_2.items():
-        for i in range(num):
-            dir = 'train_sim_traces/' + category + str(i) + '.log'
+        for i in range(3, num):
+            dir = 'test_sim_traces/norway_' + category + '_' + str(i)
             training.append(create_Dataset(dir))
 
 
@@ -239,11 +240,11 @@ def main():
           optimizer=optimizer,
           loss_fn=loss_fn)
 
-    torch.save(BandwidthLSTM, '/home/runchen/Github/BandPre-pytorch/models/Normal_6layers.pkl')
+    torch.save(BandwidthLSTM, '/home/runchen/Github/BandPre-pytorch/models/ExtendedRLS_7layers_lr00008_dp015.pkl')
 
     plt.figure(figsize=(25, 9))
     plt.plot(loss_curve)
-    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_Normal_6layers.png')
+    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_ExtendedRLS_7layers_lr00008_dp015.png')
     plt.show()
 
 
