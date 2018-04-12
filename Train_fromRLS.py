@@ -10,21 +10,21 @@ import matplotlib.pyplot as plt
 import pandas
 import padasip as pa
 
-TIME_STEP = 20
+TIME_STEP = 1
 TARGET_SIZE = 1
 INPUT_SIZE = 1
 HIDDEN_SIZE = 128
 
 BATCH_SIZE = 20
-LR = 0.0008
-EPOCH = 20
+LR = 0.0002
+EPOCH = 8
 RLS_MU = 0.6
-IS_RLS = True
+IS_RLS = False
 
 def create_Dataset(dir):
     # Input: dir, path of log files
     # Output: dataset, flattened numpy array
-    file = pandas.read_csv(dir, names = ["band"], sep = '\t')
+    file = pandas.read_csv(dir, names=["band"], sep='\t')
     dataset = file["band"][:]
     dataset = np.asarray(dataset).astype(float)
     return dataset
@@ -50,7 +50,7 @@ def create_DataTensor(dataset, window):
 
 def create_DataLoader(Tensor_x, Tensor_y):
     Tensor_batch = Data.TensorDataset(data_tensor=Tensor_x, target_tensor=Tensor_y)
-    loader = Data.DataLoader(dataset=Tensor_batch, batch_size=BATCH_SIZE, drop_last=True)
+    loader = Data.DataLoader(dataset=Tensor_batch, batch_size=BATCH_SIZE, drop_last=True, shuffle=True)
 
     return loader
 
@@ -89,7 +89,7 @@ class Net(nn.Module):
         self.lstm = nn.LSTM(
             input_size=INPUT_SIZE,
             hidden_size=HIDDEN_SIZE,
-            num_layers=7,
+            num_layers=6,
             batch_first=True,
             dropout=0.15,
             #bidirectional=True
@@ -240,11 +240,11 @@ def main():
           optimizer=optimizer,
           loss_fn=loss_fn)
 
-    torch.save(BandwidthLSTM, '/home/runchen/Github/BandPre-pytorch/models/ExtendedRLS_7layers_lr00008_dp015.pkl')
+    torch.save(BandwidthLSTM, '/home/runchen/Github/BandPre-pytorch/models/ExtendedRLS_6layers_lr00002_dp015_shuffle_TS1.pkl')
 
     plt.figure(figsize=(25, 9))
     plt.plot(loss_curve)
-    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_ExtendedRLS_7layers_lr00008_dp015.png')
+    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_ExtendedRLS_6layers_lr00002_dp015_shuffle_TS1.png')
     plt.show()
 
 
