@@ -48,8 +48,8 @@ def create_DataTensor(dataset, window):
 
     return Tensor_x, Tensor_y
 
-def create_DataLoader(Tensor_x, Tensor_y):
-    Tensor_batch = Data.TensorDataset(data_tensor=Tensor_x, target_tensor=Tensor_y)
+def create_DataLoader(Tensor_x, Tensor_y, Tensor_RLS):
+    Tensor_batch = Data.TensorDataset(Tensor_x, Tensor_y, Tensor_RLS)
     loader = Data.DataLoader(dataset=Tensor_batch, batch_size=BATCH_SIZE, drop_last=True, shuffle=True)
 
     return loader
@@ -176,7 +176,7 @@ def main():
             training.append(create_Dataset(dir))
 
     filedict_train_2 = {'bus': 24, 'car': 13, 'ferry': 21, 'metro': 10, 'train': 22, 'tram': 57}
-    training = []
+    # training = []
     for category, num in filedict_train_2.items():
         for i in range(3, num):
             dir = 'test_sim_traces/norway_' + category + '_' + str(i)
