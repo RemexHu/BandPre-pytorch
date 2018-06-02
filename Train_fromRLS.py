@@ -19,7 +19,7 @@ BATCH_SIZE = 20
 LR = 0.0002
 EPOCH = 8
 RLS_MU = 0.6
-IS_RLS = True
+IS_RLS = False
 
 def create_Dataset(dir):
     # Input: dir, path of log files
@@ -63,8 +63,14 @@ def create_RLSTensor(RLS_y):
 
 
 
-def create_DataLoader(Tensor_x, Tensor_y, Tensor_RLS):
+def create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS):
     Tensor_batch = Data.TensorDataset(Tensor_x, Tensor_y, Tensor_RLS)
+    loader = Data.DataLoader(dataset=Tensor_batch, batch_size=BATCH_SIZE, drop_last=True, shuffle=True)
+
+    return loader
+
+def create_DataLoader(Tensor_x, Tensor_y,):
+    Tensor_batch = Data.TensorDataset(Tensor_x, Tensor_y)
     loader = Data.DataLoader(dataset=Tensor_batch, batch_size=BATCH_SIZE, drop_last=True, shuffle=True)
 
     return loader
@@ -122,31 +128,79 @@ class Net(nn.Module):
         # print(outs.size())
         return outs
 
+class Net_RLS(nn.Module):
+    def __init__(self):
+        super(Net_RLS, self).__init__()
+        self.lstm = nn.LSTM(
+            input_size=INPUT_SIZE,
+            hidden_size=HIDDEN_SIZE,
+            num_layers=6,
+            batch_first=True,
+            dropout=0.15,
+            # bidirectional=True
+        )
+        self.out = nn.Linear(HIDDEN_SIZE * TIME_STEP, TARGET_SIZE)
+
+    def forward(self, x):
+        r_out, (h_n, h_c) = self.lstm(x, None)
+        # r_out shape (batch, time_step, hidden_size)
+        # then do flattening in order to pass through the linear layer
+        r_out = r_out.contiguous().view(BATCH_SIZE, 1, HIDDEN_SIZE * TIME_STEP)
+        # print('1')
+        # print(r_out.size())
+        outs = self.out(r_out)
+        # print(outs.size())
+        return outs
+
+
+
 
 def train(model, DataLoader_train, DataLoader_test, epochs, optimizer, loss_fn):
     loss_curve = []
 
     for epoch in range(epochs):
         itr = 0
-        for loader in DataLoader_train:
-            for (batch_x, batch_y) in loader:
-                batch_x, batch_y = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor)
-                x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
-                output = model(x)
 
-                loss = loss_fn(output, y)
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                itr += 1
+        if IS_RLS:
+            for loader in DataLoader_train:
+                for (batch_x, batch_y, batch_RLS) in loader:
+                    batch_x, batch_y, batch_RLS = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor), batch_RLS.type(torch.FloatTensor)
+                    x, y = Variable(batch_x), Variable(batch_y)
+                    output_RLS = Variable(batch_RLS)
 
-                if itr % 50 == 0:
-                    if IS_RLS:
+                    output = model(x)
+
+                    loss = loss_fn(output, y)
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+                    itr += 1
+
+                    if itr % 50 == 0:
                         loss_val = val_RLS(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
-                    else:
+                        loss_curve.append(loss_val)
+                        print('Epoch{} Iter{} val_oss{}'.format(epoch, itr, loss_val))
+
+
+
+        else:
+            for loader in DataLoader_train:
+                for (batch_x, batch_y) in loader:
+                    batch_x, batch_y = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor)
+                    # x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
+                    x, y = Variable(batch_x), Variable(batch_y)
+                    output = model(x)
+
+                    loss = loss_fn(output, y)
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+                    itr += 1
+
+                    if itr % 50 == 0:
                         loss_val = val(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
-                    loss_curve.append(loss_val)
-                    print('Epoch{} Iter{} val_oss{}'.format(epoch, itr, loss_val))
+                        loss_curve.append(loss_val)
+                        print('Epoch{} Iter{} val_oss{}'.format(epoch, itr, loss_val))
 
 
     loss_array = np.asarray(loss_curve)
@@ -160,7 +214,8 @@ def val(model, DataLoader_test, loss_fn):
     for loader in DataLoader_test:
         for (batch_x, batch_y) in loader:
             batch_x, batch_y = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor)
-            x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
+            # x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
+            x, y = Variable(batch_x), Variable(batch_y)
             output = model(x)
             loss_itr.append(loss_fn(output, y))
 
@@ -172,7 +227,8 @@ def val_RLS(model, DataLoader_test, loss_fn):
     for loader in DataLoader_test:
         for (batch_x, batch_y) in loader:
             batch_x, batch_y = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor)
-            x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
+            # x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
+            x, y = Variable(batch_x), Variable(batch_y)
             output = model(x)
             loss_itr.append(loss_fn(output, y))
 
@@ -216,7 +272,7 @@ def main():
             Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
             Tensor_RLS = create_RLSTensor(pred)
 
-            loader = create_DataLoader(Tensor_x, Tensor_y, Tensor_RLS)
+            loader = create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS)
             DataLoader_train.append(loader)
         for dataset in test:
             if dataset.shape[0] < 20:
@@ -227,7 +283,7 @@ def main():
             Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
             Tensor_RLS = create_RLSTensor(pred)
 
-            loader = create_DataLoader(Tensor_x, Tensor_y, Tensor_RLS)
+            loader = create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS)
             DataLoader_test.append(loader)
 
 
@@ -248,7 +304,7 @@ def main():
 
 
     BandwidthLSTM = Net()
-    BandwidthLSTM.cuda()
+    # BandwidthLSTM.cuda()
     optimizer = optim.Adam(BandwidthLSTM.parameters(), lr=LR)
     loss_fn = nn.MSELoss()
 
