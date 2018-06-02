@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import pandas
 import padasip as pa
 
-TIME_STEP = 1
+TIME_STEP = 30
 TARGET_SIZE = 1
 INPUT_SIZE = 1
 HIDDEN_SIZE = 128
@@ -19,7 +19,7 @@ BATCH_SIZE = 20
 LR = 0.0002
 EPOCH = 8
 RLS_MU = 0.6
-IS_RLS = False
+IS_RLS = True
 
 def create_Dataset(dir):
     # Input: dir, path of log files
@@ -39,7 +39,7 @@ def create_DataTensor(dataset, window):
         batch_x = dataset[i - window: i]
         batch_y = dataset[i: i + TARGET_SIZE]
         data_x.append(batch_x[:, np.newaxis])
-        data_y.append(np.array([[batch_y]]))
+        data_y.append(np.array([batch_y]))
 
     data_x, data_y = np.asarray(data_x), np.asarray(data_y)
 
@@ -47,6 +47,21 @@ def create_DataTensor(dataset, window):
     Tensor_y = torch.from_numpy(data_y)
 
     return Tensor_x, Tensor_y
+
+
+def create_RLSTensor(RLS_y):
+    data_y = []
+    for i in range(len(RLS_y)):
+        batch_y = RLS_y[i: i + TARGET_SIZE]
+        data_y.append(np.array([batch_y]))
+
+    data_y = np.asarray(data_y)
+    Tensor_y = torch.from_numpy(data_y)
+
+    return Tensor_y
+
+
+
 
 def create_DataLoader(Tensor_x, Tensor_y, Tensor_RLS):
     Tensor_batch = Data.TensorDataset(Tensor_x, Tensor_y, Tensor_RLS)
@@ -193,22 +208,26 @@ def main():
     if IS_RLS:
         DataLoader_train, DataLoader_test = [], []
         for dataset in training:
+            if dataset.shape[0] < 20:
+                continue
             RLS_x, RLS_y = create_RLSdataset(dataset)
             pred = RLS_prediction(RLS_x, RLS_y)
-            diff = dataset[TIME_STEP:] - pred
-            if diff.shape[0] < 20:
-                continue
-            Tensor_x, Tensor_y = create_DataTensor(diff, TIME_STEP)
-            loader = create_DataLoader(Tensor_x, Tensor_y)
+
+            Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
+            Tensor_RLS = create_RLSTensor(pred)
+
+            loader = create_DataLoader(Tensor_x, Tensor_y, Tensor_RLS)
             DataLoader_train.append(loader)
         for dataset in test:
+            if dataset.shape[0] < 20:
+                continue
             RLS_x, RLS_y = create_RLSdataset(dataset)
             pred = RLS_prediction(RLS_x, RLS_y)
-            diff = dataset[TIME_STEP:] - pred
-            if diff.shape[0] < 20:
-                continue
-            Tensor_x, Tensor_y = create_DataTensor(diff, TIME_STEP)
-            loader = create_DataLoader(Tensor_x, Tensor_y)
+
+            Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
+            Tensor_RLS = create_RLSTensor(pred)
+
+            loader = create_DataLoader(Tensor_x, Tensor_y, Tensor_RLS)
             DataLoader_test.append(loader)
 
 
