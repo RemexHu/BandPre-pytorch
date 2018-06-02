@@ -19,7 +19,7 @@ BATCH_SIZE = 20
 LR = 0.0002
 EPOCH = 8
 RLS_MU = 0.6
-IS_RLS = False
+IS_RLS = True
 
 def create_Dataset(dir):
     # Input: dir, path of log files
@@ -139,9 +139,10 @@ class Net_RLS(nn.Module):
             dropout=0.15,
             # bidirectional=True
         )
-        self.out = nn.Linear(HIDDEN_SIZE * TIME_STEP, TARGET_SIZE)
+        self.out = nn.Linear(64, TARGET_SIZE)
+        self.hidden = nn.Linear(2 * HIDDEN_SIZE * TIME_STEP, 64)
 
-    def forward(self, x):
+    def forward(self, x, output_RLS):
         r_out, (h_n, h_c) = self.lstm(x, None)
         # r_out shape (batch, time_step, hidden_size)
         # then do flattening in order to pass through the linear layer
@@ -155,7 +156,7 @@ class Net_RLS(nn.Module):
 
 
 
-def train(model, DataLoader_train, DataLoader_test, epochs, optimizer, loss_fn):
+def train(model, model_RLS, DataLoader_train, DataLoader_test, epochs, optimizer, loss_fn):
     loss_curve = []
 
     for epoch in range(epochs):
@@ -304,16 +305,18 @@ def main():
 
 
     BandwidthLSTM = Net()
+    BandwidthLSTM_RLS = Net_RLS()
     # BandwidthLSTM.cuda()
     optimizer = optim.Adam(BandwidthLSTM.parameters(), lr=LR)
     loss_fn = nn.MSELoss()
 
     BandwidthLSTM, loss_curve = train(model=BandwidthLSTM,
-          DataLoader_train=DataLoader_train,
-          DataLoader_test=DataLoader_test,
-          epochs=EPOCH,
-          optimizer=optimizer,
-          loss_fn=loss_fn)
+                                      model_RLS=BandwidthLSTM_RLS,
+                                      DataLoader_train=DataLoader_train,
+                                      DataLoader_test=DataLoader_test,
+                                      epochs=EPOCH,
+                                      optimizer=optimizer,
+                                      loss_fn=loss_fn)
 
     torch.save(BandwidthLSTM, '/home/runchen/Github/BandPre-pytorch/models/ExtendedRLS_6layers_lr00002_dp015_shuffle_TS1.pkl')
 
