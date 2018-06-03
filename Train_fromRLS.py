@@ -140,7 +140,7 @@ class Net_RLS(nn.Module):
             # bidirectional=True
         )
         self.out = nn.Linear(64, TARGET_SIZE)
-        self.hidden = nn.Linear(2 * HIDDEN_SIZE * TIME_STEP, 64)
+        self.out_lstm = nn.Linear(HIDDEN_SIZE * TIME_STEP, TARGET_SIZE)
 
     def forward(self, x, output_RLS):
         r_out, (h_n, h_c) = self.lstm(x, None)
@@ -149,8 +149,15 @@ class Net_RLS(nn.Module):
         r_out = r_out.contiguous().view(BATCH_SIZE, 1, HIDDEN_SIZE * TIME_STEP)
         # print('1')
         # print(r_out.size())
-        outs = self.out(r_out)
+        output_lstm = self.out_lstm(r_out)
         # print(outs.size())
+
+
+
+
+
+
+
         return outs
 
 
@@ -169,7 +176,7 @@ def train(model, model_RLS, DataLoader_train, DataLoader_test, epochs, optimizer
                     x, y = Variable(batch_x), Variable(batch_y)
                     output_RLS = Variable(batch_RLS)
 
-                    output = model(x)
+                    output = model_RLS(x, output_RLS)
 
                     loss = loss_fn(output, y)
                     optimizer.zero_grad()
@@ -223,14 +230,16 @@ def val(model, DataLoader_test, loss_fn):
     return np.sum(sum(loss_itr).data.cpu().numpy())
 
 
-def val_RLS(model, DataLoader_test, loss_fn):
+def val_RLS(model_RLS, DataLoader_test, loss_fn):
     loss_itr = []
     for loader in DataLoader_test:
-        for (batch_x, batch_y) in loader:
+        for (batch_x, batch_y, batch_RLS) in loader:
             batch_x, batch_y = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor)
             # x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
             x, y = Variable(batch_x), Variable(batch_y)
-            output = model(x)
+            output_RLS = Variable(batch_RLS)
+
+            output = model_RLS(x, output_RLS)
             loss_itr.append(loss_fn(output, y))
 
     return np.sum(sum(loss_itr).data.cpu().numpy())
@@ -307,10 +316,14 @@ def main():
     BandwidthLSTM = Net()
     BandwidthLSTM_RLS = Net_RLS()
     # BandwidthLSTM.cuda()
-    optimizer = optim.Adam(BandwidthLSTM.parameters(), lr=LR)
+    if IS_RLS:
+        optimizer = optim.Adam(BandwidthLSTM_RLS.parameters(), lr=LR)
+    else:
+        optimizer = optim.Adam(BandwidthLSTM.parameters(), lr=LR)
+
     loss_fn = nn.MSELoss()
 
-    BandwidthLSTM, loss_curve = train(model=BandwidthLSTM,
+    model, loss_curve = train(model=BandwidthLSTM,
                                       model_RLS=BandwidthLSTM_RLS,
                                       DataLoader_train=DataLoader_train,
                                       DataLoader_test=DataLoader_test,
@@ -318,7 +331,7 @@ def main():
                                       optimizer=optimizer,
                                       loss_fn=loss_fn)
 
-    torch.save(BandwidthLSTM, '/home/runchen/Github/BandPre-pytorch/models/ExtendedRLS_6layers_lr00002_dp015_shuffle_TS1.pkl')
+    torch.save(model, '/home/runchen/Github/BandPre-pytorch/models/ExtendedRLS_6layers_lr00002_dp015_shuffle_TS1.pkl')
 
     plt.figure(figsize=(25, 9))
     plt.plot(loss_curve)
