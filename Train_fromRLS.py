@@ -140,6 +140,7 @@ class Net_RLS(nn.Module):
             # bidirectional=True
         )
         self.out = nn.Linear(64, TARGET_SIZE)
+        self.hidden = nn.Linear(2, 64)
         self.out_lstm = nn.Linear(HIDDEN_SIZE * TIME_STEP, TARGET_SIZE)
 
     def forward(self, x, output_RLS):
@@ -152,10 +153,9 @@ class Net_RLS(nn.Module):
         output_lstm = self.out_lstm(r_out)
         # print(outs.size())
 
-
-
-
-
+        output = torch.cat((output_lstm, output_RLS), dim=2)
+        hidden = self.hidden(output)
+        outs = self.out(hidden)
 
 
         return outs
@@ -173,19 +173,20 @@ def train(model, model_RLS, DataLoader_train, DataLoader_test, epochs, optimizer
             for loader in DataLoader_train:
                 for (batch_x, batch_y, batch_RLS) in loader:
                     batch_x, batch_y, batch_RLS = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor), batch_RLS.type(torch.FloatTensor)
-                    x, y = Variable(batch_x), Variable(batch_y)
-                    output_RLS = Variable(batch_RLS)
 
-                    output = model_RLS(x, output_RLS)
+                    # x, y = Variable(batch_x), Variable(batch_y)
+                    # output_RLS = Variable(batch_RLS)
 
-                    loss = loss_fn(output, y)
+                    output = model_RLS(batch_x, batch_RLS)
+
+                    loss = loss_fn(output, batch_y)
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
                     itr += 1
 
                     if itr % 50 == 0:
-                        loss_val = val_RLS(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
+                        loss_val = val_RLS(model_RLS=model_RLS, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
                         loss_curve.append(loss_val)
                         print('Epoch{} Iter{} val_oss{}'.format(epoch, itr, loss_val))
 
@@ -234,13 +235,13 @@ def val_RLS(model_RLS, DataLoader_test, loss_fn):
     loss_itr = []
     for loader in DataLoader_test:
         for (batch_x, batch_y, batch_RLS) in loader:
-            batch_x, batch_y = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor)
+            batch_x, batch_y, batch_RLS = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor), batch_RLS.type(torch.FloatTensor)
             # x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
-            x, y = Variable(batch_x), Variable(batch_y)
-            output_RLS = Variable(batch_RLS)
+            # x, y = Variable(batch_x), Variable(batch_y)
+            # output_RLS = Variable(batch_RLS)
 
-            output = model_RLS(x, output_RLS)
-            loss_itr.append(loss_fn(output, y))
+            output = model_RLS(batch_x, batch_RLS)
+            loss_itr.append(loss_fn(output, batch_y))
 
     return np.sum(sum(loss_itr).data.cpu().numpy())
 
@@ -331,11 +332,11 @@ def main():
                                       optimizer=optimizer,
                                       loss_fn=loss_fn)
 
-    torch.save(model, '/home/runchen/Github/BandPre-pytorch/models/ExtendedRLS_6layers_lr00002_dp015_shuffle_TS1.pkl')
+    torch.save(model, '/home/runchen/Github/BandPre-pytorch/models/test.pkl')
 
     plt.figure(figsize=(25, 9))
     plt.plot(loss_curve)
-    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_ExtendedRLS_6layers_lr00002_dp015_shuffle_TS1.png')
+    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_test.png')
     plt.show()
 
 
