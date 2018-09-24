@@ -16,7 +16,7 @@ TARGET_SIZE = 1
 INPUT_SIZE = 1
 HIDDEN_SIZE = 128
 
-BATCH_SIZE = 20
+BATCH_SIZE = 96
 LR = 0.0002
 EPOCH = 8
 RLS_MU = 0.6
@@ -69,6 +69,9 @@ def create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS):
     loader = Data.DataLoader(dataset=Tensor_batch, batch_size=BATCH_SIZE, drop_last=True, shuffle=True)
 
     return loader
+
+
+
 
 def create_DataLoader(Tensor_x, Tensor_y,):
     Tensor_batch = Data.TensorDataset(Tensor_x, Tensor_y)
@@ -278,7 +281,7 @@ def main():
     if IS_RLS:
         DataLoader_train, DataLoader_test = [], []
         for dataset in training:
-            if dataset.shape[0] < 20:
+            if dataset.shape[0] < TIME_STEP:
                 continue
             RLS_x, RLS_y = create_RLSdataset(dataset)
             pred = RLS_prediction(RLS_x, RLS_y)
@@ -289,7 +292,7 @@ def main():
             loader = create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS)
             DataLoader_train.append(loader)
         for dataset in test:
-            if dataset.shape[0] < 20:
+            if dataset.shape[0] < TIME_STEP:
                 continue
             RLS_x, RLS_y = create_RLSdataset(dataset)
             pred = RLS_prediction(RLS_x, RLS_y)
@@ -304,13 +307,13 @@ def main():
     else:
         DataLoader_train, DataLoader_test = [], []
         for dataset in training:
-            if dataset.shape[0] < 20:
+            if dataset.shape[0] < TIME_STEP:
                 continue
             Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
             loader = create_DataLoader(Tensor_x, Tensor_y)
             DataLoader_train.append(loader)
         for dataset in test:
-            if dataset.shape[0] < 20:
+            if dataset.shape[0] < TIME_STEP:
                 continue
             Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
             loader = create_DataLoader(Tensor_x, Tensor_y)
