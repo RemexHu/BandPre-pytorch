@@ -2,10 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="013752d4-b8bd-4c3c-83e2-c4df172ec1f9" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/BandPre-pytorch.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/BandPre-pytorch.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Train_fromRLS_GPU.py" beforeDir="false" afterPath="$PROJECT_DIR$/Train_fromRLS_GPU.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Traces/PlotCurve.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Traces/PlotCurve.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Train_fromRLS_GPU.py" beforeDir="false" afterPath="$PROJECT_DIR$/Train_fromRLS_Sep.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Train_fromRLS_GPU_v2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Train_fromRLS_General.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Test_allCategories.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -31,7 +32,7 @@
       <file leaf-file-name="Train_fromRLS.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Train_fromRLS.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="799">
               <caret line="343" column="10" selection-end-line="343" selection-end-column="10" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
@@ -40,11 +41,42 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Train_fromRLS_GPU.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Train_fromRLS_GPU.py">
+      <file leaf-file-name="Train_fromRLS_General.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Train_fromRLS_General.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="7" selection-start-line="7" selection-end-line="7" selection-end-column="31" />
+            <state relative-caret-position="-1173">
+              <caret line="235" selection-start-line="235" selection-end-line="235" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Train_fromRLS_Sep.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Train_fromRLS_Sep.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-51">
+              <caret line="209" column="63" selection-start-line="209" selection-start-column="63" selection-end-line="209" selection-end-column="63" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+                <element signature="e#408#639#0" />
+                <element signature="e#685#1283#0" />
+                <element signature="e#1319#1543#0" />
+                <element signature="e#1611#1799#0" />
+                <element signature="e#1852#2028#0" />
+                <element signature="e#2067#2411#0" />
+                <element signature="e#2452#2699#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="rnn.py" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/anaconda3/envs/pytorch/lib/python3.6/site-packages/torch/nn/_functions/rnn.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="196">
+              <caret line="115" selection-start-line="115" selection-end-line="115" />
             </state>
           </provider>
         </entry>
@@ -58,16 +90,30 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test.py">
+      <file leaf-file-name="Test_allCategories.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Test_allCategories.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="238">
               <caret line="14" selection-start-line="14" selection-end-line="14" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
             </state>
           </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Test.ipynb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Test.ipynb">
+          <provider selected="true" editor-type-id="ipnb-editor">
+            <state>
+              <selected id="1" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
     </leaf>
@@ -83,6 +129,8 @@
     <findStrings>
       <find>TIME_STEP</find>
       <find>BATCH_SIZE</find>
+      <find>variable</find>
+      <find>IS_rls</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -95,11 +143,12 @@
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/Train_fromRLS.py" />
         <option value="$PROJECT_DIR$/Train_fromRLS_GPU.py" />
+        <option value="$PROJECT_DIR$/Train_fromRLS_Sep.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="2808" />
+    <option name="x" value="65" />
     <option name="y" value="-4" />
     <option name="width" value="919" />
     <option name="height" value="1000" />
@@ -130,6 +179,11 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
   <component name="RunDashboard">
     <option name="ruleStates">
       <list>
@@ -142,7 +196,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.Train_fromRLS_GPU">
+  <component name="RunManager" selected="Python.Train_fromRLS_Sep">
     <configuration name="Train_fromRLS" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="BandPre-pytorch" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -173,7 +227,25 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Train_fromRLS_GPU.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Train_fromRLS_General.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="Train_fromRLS_Sep" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="BandPre-pytorch" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Train_fromRLS_Sep.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -201,9 +273,11 @@
       <item itemvalue="Python.Train_fromRLS" />
       <item itemvalue="Python.Train_pytorch" />
       <item itemvalue="Python.Train_fromRLS_GPU" />
+      <item itemvalue="Python.Train_fromRLS_Sep" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.Train_fromRLS_Sep" />
         <item itemvalue="Python.Train_fromRLS_GPU" />
         <item itemvalue="Python.Train_fromRLS" />
         <item itemvalue="Python.Train_pytorch" />
@@ -228,22 +302,29 @@
       <option name="project" value="LOCAL" />
       <updated>1522463467678</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Test">
+      <created>1537819167588</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1537819167588</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1985" y="-4" width="1855" height="1084" extended-state="6" />
+    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="1" visible="true" weight="0.14137554" />
       <window_info anchor="bottom" id="TODO" order="10" />
       <window_info anchor="bottom" id="Event Log" order="0" side_tool="true" />
-      <window_info anchor="bottom" id="Run" order="6" weight="0.32843652" />
+      <window_info anchor="bottom" id="Run" order="6" visible="true" weight="0.32843652" />
       <window_info anchor="bottom" id="Version Control" order="1" />
       <window_info anchor="bottom" id="Python Console" order="2" />
       <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="3" />
-      <window_info anchor="bottom" id="Debug" order="7" weight="0.33997902" />
+      <window_info anchor="bottom" id="Debug" order="7" weight="0.6946485" />
       <window_info id="Favorites" order="0" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -288,7 +369,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Trying to implement RLS filter on training traces." />
-    <option name="LAST_COMMIT_MESSAGE" value="Trying to implement RLS filter on training traces." />
+    <MESSAGE value="Test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -296,6 +378,10 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Train_pytorch.py</url>
           <line>170</line>
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Train_fromRLS_Sep.py</url>
+          <option name="timeStamp" value="21" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -305,7 +391,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="15" />
+      <option name="time" value="22" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -336,7 +422,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
+    <entry file="file://$PROJECT_DIR$/Test_allCategories.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="266">
           <caret line="14" selection-start-line="14" selection-end-line="14" />
@@ -346,10 +432,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Train_fromRLS_GPU.py">
+    <entry file="file://$PROJECT_DIR$/Train_fromRLS_General.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5966">
           <caret line="323" column="4" selection-start-line="323" selection-start-column="4" selection-end-line="323" selection-end-column="4" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -363,7 +452,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
+    <entry file="file://$PROJECT_DIR$/Test_allCategories.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
           <caret line="14" selection-start-line="14" selection-end-line="14" />
@@ -393,7 +482,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
+    <entry file="file://$PROJECT_DIR$/Test_allCategories.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="38">
           <caret line="14" selection-start-line="14" selection-end-line="14" />
@@ -423,7 +512,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
+    <entry file="file://$PROJECT_DIR$/Test_allCategories.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="38">
           <caret line="14" selection-start-line="14" selection-end-line="14" />
@@ -453,7 +542,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
+    <entry file="file://$PROJECT_DIR$/Test_allCategories.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="38">
           <caret line="14" selection-start-line="14" selection-end-line="14" />
@@ -537,16 +626,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret line="14" selection-start-line="14" selection-end-line="14" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda3/lib/python3.6/site-packages/torch/utils/data/dataset.py" />
     <entry file="file://$USER_HOME$/anaconda3/lib/python3.6/site-packages/torch/utils/data/dataloader.py" />
     <entry file="file://$USER_HOME$/anaconda3/lib/python3.6/site-packages/torch/autograd/variable.py" />
@@ -568,9 +647,19 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Test.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/Train_fromRLS.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
+        <state relative-caret-position="799">
           <caret line="343" column="10" selection-end-line="343" selection-end-column="10" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
@@ -578,10 +667,47 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Train_fromRLS_GPU.py">
+    <entry file="file://$PROJECT_DIR$/Train_fromRLS_General.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" selection-start-line="7" selection-end-line="7" selection-end-column="31" />
+        <state relative-caret-position="-1173">
+          <caret line="235" selection-start-line="235" selection-end-line="235" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda3/envs/pytorch/lib/python3.6/site-packages/torch/nn/_functions/rnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="196">
+          <caret line="115" selection-start-line="115" selection-end-line="115" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Test_allCategories.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" selection-start-line="14" selection-end-line="14" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Train_fromRLS_Sep.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-51">
+          <caret line="209" column="63" selection-start-line="209" selection-start-column="63" selection-end-line="209" selection-end-column="63" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+            <element signature="e#408#639#0" />
+            <element signature="e#685#1283#0" />
+            <element signature="e#1319#1543#0" />
+            <element signature="e#1611#1799#0" />
+            <element signature="e#1852#2028#0" />
+            <element signature="e#2067#2411#0" />
+            <element signature="e#2452#2699#0" />
+          </folding>
         </state>
       </provider>
     </entry>

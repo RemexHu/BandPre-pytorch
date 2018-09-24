@@ -18,9 +18,10 @@ HIDDEN_SIZE = 128
 
 BATCH_SIZE = 96
 LR = 0.0002
-EPOCH = 8
+EPOCH = 20
 RLS_MU = 0.6
-IS_RLS = True
+IS_RLS = False
+
 
 def create_Dataset(dir):
     # Input: dir, path of log files
@@ -29,6 +30,7 @@ def create_Dataset(dir):
     dataset = file["band"][:]
     dataset = np.asarray(dataset).astype(float)
     return dataset
+
 
 def create_DataTensor(dataset, window):
     # Input: dataset, flattened numpy array
@@ -62,15 +64,11 @@ def create_RLSTensor(RLS_y):
     return Tensor_y
 
 
-
-
 def create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS):
     Tensor_batch = Data.TensorDataset(Tensor_x, Tensor_y, Tensor_RLS)
     loader = Data.DataLoader(dataset=Tensor_batch, batch_size=BATCH_SIZE, drop_last=True, shuffle=True)
 
     return loader
-
-
 
 
 def create_DataLoader(Tensor_x, Tensor_y,):
@@ -105,9 +103,6 @@ def RLS_prediction(RLS_x, RLS_y):
     return pred
 
 
-
-
-
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -131,6 +126,7 @@ class Net(nn.Module):
         outs = self.out(r_out)
         # print(outs.size())
         return outs
+
 
 class Net_RLS(nn.Module):
     def __init__(self):
@@ -165,8 +161,6 @@ class Net_RLS(nn.Module):
         return outs
 
 
-
-
 def train(model, model_RLS, DataLoader_train, DataLoader_test, epochs, optimizer, loss_fn):
     loss_curve = []
 
@@ -192,7 +186,7 @@ def train(model, model_RLS, DataLoader_train, DataLoader_test, epochs, optimizer
                     if itr % 50 == 0:
                         loss_val = val_RLS(model_RLS=model_RLS, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
                         loss_curve.append(loss_val)
-                        print('Epoch{} Iter{} val_oss{}'.format(epoch, itr, loss_val))
+                        print('Epoch = {} Iter = {} val_loss = {}'.format(epoch, itr, loss_val))
 
 
 
@@ -200,8 +194,8 @@ def train(model, model_RLS, DataLoader_train, DataLoader_test, epochs, optimizer
             for loader in DataLoader_train:
                 for (batch_x, batch_y) in loader:
                     batch_x, batch_y = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor)
-                    # x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
-                    x, y = Variable(batch_x), Variable(batch_y)
+                    x, y = batch_x.cuda(), batch_y.cuda()
+                    # x, y = Variable(batch_x), Variable(batch_y)
                     output = model(x)
 
                     loss = loss_fn(output, y)
@@ -213,7 +207,7 @@ def train(model, model_RLS, DataLoader_train, DataLoader_test, epochs, optimizer
                     if itr % 50 == 0:
                         loss_val = val(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
                         loss_curve.append(loss_val)
-                        print('Epoch{} Iter{} val_oss{}'.format(epoch, itr, loss_val))
+                        print('Epoch = {} Iter = {} val_loss = {}'.format(epoch, itr, loss_val))
 
 
     loss_array = np.asarray(loss_curve)
@@ -227,8 +221,8 @@ def val(model, DataLoader_test, loss_fn):
     for loader in DataLoader_test:
         for (batch_x, batch_y) in loader:
             batch_x, batch_y = batch_x.type(torch.FloatTensor), batch_y.type(torch.FloatTensor)
-            # x, y = Variable(batch_x).cuda(), Variable(batch_y).cuda()
-            x, y = Variable(batch_x), Variable(batch_y)
+            x, y = batch_x.cuda(), batch_y.cuda()
+            # x, y = batch_x, batch_y
             output = model(x)
             loss_itr.append(loss_fn(output, y))
 
@@ -253,99 +247,103 @@ def val_RLS(model_RLS, DataLoader_test, loss_fn):
 
 
 
-
 def main():
 
     filedict_train_1 = {'bus': 11, 'car': 5, 'ferry': 15, 'metro': 16, 'train': 4, 'tram': 17}
-    training = []
+    trainset = {}
     for category, num in filedict_train_1.items():
         for i in range(num):
             dir = 'train_sim_traces/' + category + str(i) +'.log'
-            training.append(create_Dataset(dir))
+            trainset[category] = trainset.get(category, []) + [create_Dataset(dir)]
 
     filedict_train_2 = {'bus': 24, 'car': 13, 'ferry': 21, 'metro': 10, 'train': 22, 'tram': 57}
-    # training = []
     for category, num in filedict_train_2.items():
         for i in range(3, num):
             dir = 'test_sim_traces/norway_' + category + '_' + str(i)
-            training.append(create_Dataset(dir))
+            trainset[category] = trainset.get(category, []) + [create_Dataset(dir)]
 
 
     filedict_test = {'bus': 2, 'car': 2, 'ferry': 2, 'metro': 2, 'train': 2, 'tram': 2}
-    test = []
+    testset = {}
     for category, num in filedict_test.items():
         for i in range(num):
             dir = 'test_sim_traces/norway_' + category + '_' + str(i + 1)
-            test.append(create_Dataset(dir))
-
-    if IS_RLS:
-        DataLoader_train, DataLoader_test = [], []
-        for dataset in training:
-            if dataset.shape[0] < TIME_STEP:
-                continue
-            RLS_x, RLS_y = create_RLSdataset(dataset)
-            pred = RLS_prediction(RLS_x, RLS_y)
-
-            Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
-            Tensor_RLS = create_RLSTensor(pred)
-
-            loader = create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS)
-            DataLoader_train.append(loader)
-        for dataset in test:
-            if dataset.shape[0] < TIME_STEP:
-                continue
-            RLS_x, RLS_y = create_RLSdataset(dataset)
-            pred = RLS_prediction(RLS_x, RLS_y)
-
-            Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
-            Tensor_RLS = create_RLSTensor(pred)
-
-            loader = create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS)
-            DataLoader_test.append(loader)
+            testset[category] = testset.get(category, []) + [create_Dataset(dir)]
 
 
-    else:
-        DataLoader_train, DataLoader_test = [], []
-        for dataset in training:
-            if dataset.shape[0] < TIME_STEP:
-                continue
-            Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
-            loader = create_DataLoader(Tensor_x, Tensor_y)
-            DataLoader_train.append(loader)
-        for dataset in test:
-            if dataset.shape[0] < TIME_STEP:
-                continue
-            Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
-            loader = create_DataLoader(Tensor_x, Tensor_y)
-            DataLoader_test.append(loader)
+    for category in trainset:
+        training = trainset[category]
+        testing = testset[category]
 
 
-    BandwidthLSTM = Net()
-    BandwidthLSTM_RLS = Net_RLS()
-    BandwidthLSTM.cuda()
-    BandwidthLSTM_RLS.cuda()
-    
-    if IS_RLS:
-        optimizer = optim.Adam(BandwidthLSTM_RLS.parameters(), lr=LR)
-    else:
-        optimizer = optim.Adam(BandwidthLSTM.parameters(), lr=LR)
+        if IS_RLS:
+            DataLoader_train, DataLoader_test = [], []
+            for dataset in training:
+                if dataset.shape[0] < TIME_STEP:
+                    continue
+                RLS_x, RLS_y = create_RLSdataset(dataset)
+                pred = RLS_prediction(RLS_x, RLS_y)
 
-    loss_fn = nn.MSELoss()
+                Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
+                Tensor_RLS = create_RLSTensor(pred)
 
-    model, loss_curve = train(model=BandwidthLSTM,
-                                      model_RLS=BandwidthLSTM_RLS,
-                                      DataLoader_train=DataLoader_train,
-                                      DataLoader_test=DataLoader_test,
-                                      epochs=EPOCH,
-                                      optimizer=optimizer,
-                                      loss_fn=loss_fn)
+                loader = create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS)
+                DataLoader_train.append(loader)
+            for dataset in testing:
+                if dataset.shape[0] < TIME_STEP:
+                    continue
+                RLS_x, RLS_y = create_RLSdataset(dataset)
+                pred = RLS_prediction(RLS_x, RLS_y)
 
-    torch.save(model, '/home/runchen/Github/BandPre-pytorch/models/test.pkl')
+                Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
+                Tensor_RLS = create_RLSTensor(pred)
 
-    plt.figure(figsize=(25, 9))
-    plt.plot(loss_curve)
-    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_test.png')
-    plt.show()
+                loader = create_DataLoader_RLS(Tensor_x, Tensor_y, Tensor_RLS)
+                DataLoader_test.append(loader)
+
+
+        else:
+            DataLoader_train, DataLoader_test = [], []
+            for dataset in training:
+                if dataset.shape[0] < TIME_STEP:
+                    continue
+                Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
+                loader = create_DataLoader(Tensor_x, Tensor_y)
+                DataLoader_train.append(loader)
+            for dataset in testing:
+                if dataset.shape[0] < TIME_STEP:
+                    continue
+                Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
+                loader = create_DataLoader(Tensor_x, Tensor_y)
+                DataLoader_test.append(loader)
+
+
+        BandwidthLSTM = Net()
+        BandwidthLSTM_RLS = Net_RLS()
+        BandwidthLSTM.cuda()
+        BandwidthLSTM_RLS.cuda()
+
+        if IS_RLS:
+            optimizer = optim.Adam(BandwidthLSTM_RLS.parameters(), lr=LR)
+        else:
+            optimizer = optim.Adam(BandwidthLSTM.parameters(), lr=LR)
+
+        loss_fn = nn.MSELoss()
+
+        model, loss_curve = train(model=BandwidthLSTM,
+                                  model_RLS=BandwidthLSTM_RLS,
+                                  DataLoader_train=DataLoader_train,
+                                  DataLoader_test=DataLoader_test,
+                                  epochs=EPOCH,
+                                  optimizer=optimizer,
+                                  loss_fn=loss_fn)
+
+        torch.save(model, '/home/runchen/Github/BandPre-pytorch/models/' + category + '.pkl')
+
+        plt.figure(figsize=(25, 9))
+        plt.plot(loss_curve)
+        plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_' + category + '.png')
+        # plt.show()
 
 
 if __name__ == '__main__':
