@@ -12,7 +12,7 @@ import Train_fromRLS
 import Train_pytorch
 
 MODEL_CATEGORY = ['bus', 'car', 'ferry', 'metro', 'train', 'tram', 'general']
-SET_CATEGOTY = ['bus', 'car', 'ferry', 'metro', 'train', 'tram']
+
 
 
 
@@ -55,10 +55,9 @@ class Net(nn.Module):
 def create_Dataset(dir):
     # Input: dir, path of log files
     # Output: dataset, flattened numpy array
-    file = pandas.read_csv(dir, names=["band"], sep='\t')
-    dataset = file["band"][:]
-    dataset = np.asarray(dataset).astype(float)
-    return dataset
+    file = pandas.read_csv(dir, header=None)
+    dataset = np.asarray(file).astype(float)
+    return dataset.flatten()
 
 def create_DataTensor(dataset, window):
     # Input: dataset, flattened numpy array
@@ -100,31 +99,22 @@ def test(model, DataLoader_test, loss_fn):
 
 def main():
 
-    loss_table = [[0] * len(SET_CATEGOTY) for i in range(len(MODEL_CATEGORY))]
+    loss_table = [0] * len(MODEL_CATEGORY)
     loss_fn = nn.MSELoss()
-
-    filedict_test = {'bus': 3, 'car': 3, 'ferry': 3, 'metro': 3, 'train': 3, 'tram': 3}
-    testset = {}
-    for category, num in filedict_test.items():
-        for i in range(num):
-            dir = 'test_sim_traces/norway_' + category + '_' + str(i + 1)
-            testset[category] = testset.get(category, []) + [create_Dataset(dir)]
-
+    testing = [create_Dataset('Traces/Ntrain_clean.txt')]
     for i, Mcategory in enumerate(MODEL_CATEGORY):
         model = torch.load(DIR + Mcategory + '.pkl')
-        for j, Scategory in enumerate(SET_CATEGOTY):
-            testing = testset[Scategory]
-            DataLoader_test = []
-            for dataset in testing:
-                if dataset.shape[0] < TIME_STEP:
-                    continue
-                Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
-                loader = create_DataLoader(Tensor_x, Tensor_y)
-                DataLoader_test.append(loader)
+        DataLoader_test = []
+        for dataset in testing:
+            if dataset.shape[0] < TIME_STEP:
+                continue
+            Tensor_x, Tensor_y = create_DataTensor(dataset, TIME_STEP)
+            loader = create_DataLoader(Tensor_x, Tensor_y)
+            DataLoader_test.append(loader)
 
-            loss = test(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
-            loss_table[i][j] = loss
-            print(Mcategory, Scategory)
+        loss = test(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
+        loss_table[i] = loss
+
 
     print(loss_table)
 

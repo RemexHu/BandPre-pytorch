@@ -263,7 +263,7 @@ def main():
             trainset[category] = trainset.get(category, []) + [create_Dataset(dir)]
 
 
-    filedict_test = {'bus': 2, 'car': 2, 'ferry': 2, 'metro': 2, 'train': 2, 'tram': 2}
+    filedict_test = {'bus': 3, 'car': 3, 'ferry': 3, 'metro': 3, 'train': 3, 'tram': 3}
     testset = {}
     for category, num in filedict_test.items():
         for i in range(num):
