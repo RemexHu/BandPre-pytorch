@@ -11,7 +11,7 @@ import padasip as pa
 import Train_fromRLS
 import Train_pytorch
 
-MODEL_CATEGORY = ['bus', 'car', 'ferry', 'metro', 'train', 'tram', 'general']
+MODEL_CATEGORY = ['bus', 'car', 'ferry', 'metro', 'train', 'tram', 'general', '0.3general', '0.5general', '0.7general']
 SET_CATEGOTY = ['bus', 'car', 'ferry', 'metro', 'train', 'tram']
 
 

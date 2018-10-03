@@ -15,6 +15,7 @@ TIME_STEP = 30
 TARGET_SIZE = 1
 INPUT_SIZE = 1
 HIDDEN_SIZE = 128
+RATIO = 0.7
 
 BATCH_SIZE = 96
 LR = 0.0002
@@ -252,13 +253,13 @@ def main():
     filedict_train_1 = {'bus': 11, 'car': 5, 'ferry': 15, 'metro': 16, 'train': 4, 'tram': 17}
     training = []
     for category, num in filedict_train_1.items():
-        for i in range(num):
+        for i in range(int(num * RATIO)):
             dir = 'train_sim_traces/' + category + str(i) +'.log'
             training.append(create_Dataset(dir))
 
     filedict_train_2 = {'bus': 24, 'car': 13, 'ferry': 21, 'metro': 10, 'train': 22, 'tram': 57}
     for category, num in filedict_train_2.items():
-        for i in range(3, num):
+        for i in range(3, int(num * RATIO)):
             dir = 'test_sim_traces/norway_' + category + '_' + str(i)
             training.append(create_Dataset(dir))
 
@@ -333,11 +334,13 @@ def main():
                               loss_fn=loss_fn)
 
 
-    torch.save(model, '/home/runchen/Github/BandPre-pytorch/models/general.pkl')
+    torch.save(model, '/home/runchen/Github/BandPre-pytorch/models/' + str(RATIO) + 'general.pkl')
 
     plt.figure(figsize=(25, 9))
     plt.plot(loss_curve)
-    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_general.png')
+
+    print(np.average(loss_curve[-15:]))
+    plt.savefig('/home/runchen/Github/BandPre-pytorch/Curves/Loss_curve_general' + str(RATIO) + '.png')
     # plt.show()
 
 

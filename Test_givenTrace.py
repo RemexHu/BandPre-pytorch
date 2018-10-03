@@ -11,7 +11,7 @@ import padasip as pa
 import Train_fromRLS
 import Train_pytorch
 
-MODEL_CATEGORY = ['bus', 'car', 'ferry', 'metro', 'train', 'tram', 'general']
+MODEL_CATEGORY = ['bus', 'car', 'ferry', 'metro', 'train', 'tram', 'general', '0.3general', '0.5general', '0.7general']
 
 
 
@@ -101,7 +101,7 @@ def main():
 
     loss_table = [0] * len(MODEL_CATEGORY)
     loss_fn = nn.MSELoss()
-    testing = [create_Dataset('Traces/Ntrain_clean.txt')]
+    testing = [create_Dataset('Traces/7train(1)_clean.txt')]
     for i, Mcategory in enumerate(MODEL_CATEGORY):
         model = torch.load(DIR + Mcategory + '.pkl')
         DataLoader_test = []
@@ -115,6 +115,7 @@ def main():
         loss = test(model=model, DataLoader_test=DataLoader_test, loss_fn=loss_fn)
         loss_table[i] = loss
 
+    # loss_table = np.asarray(loss_table)
 
     print(loss_table)
 
